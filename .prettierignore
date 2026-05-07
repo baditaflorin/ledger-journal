@@ -1,0 +1,7 @@
+node_modules
+coverage
+dist
+docs/index.html
+docs/404.html
+docs/version.json
+docs/assets
