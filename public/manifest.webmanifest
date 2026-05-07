@@ -1,0 +1,17 @@
+{
+  "name": "Ledger Journal",
+  "short_name": "Ledger",
+  "description": "Private encrypted journal with hash-chained proof bundles.",
+  "start_url": "/ledger-journal/",
+  "scope": "/ledger-journal/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "/ledger-journal/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
