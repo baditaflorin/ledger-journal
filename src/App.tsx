@@ -38,6 +38,7 @@ import {
   latestCoveringCheckpoint,
   verifyChain,
 } from "./features/ledger/ledger";
+import { verifyProofBundle } from "./features/ledger/proof";
 import {
   getVaultEnvelope,
   listCheckpoints,
@@ -52,6 +53,7 @@ import type {
   EncryptedEntryRecord,
   EntryDraft,
   MerkleCheckpoint,
+  ProofBundle,
   VaultEnvelope,
   VaultSecret,
 } from "./features/ledger/types";
@@ -236,6 +238,30 @@ function App() {
     const bundle = await exportProofBundle(entry, records, checkpoint);
     downloadProofBundle(bundle);
     setNotice(`Proof bundle exported for entry ${entry.record.sequence}.`);
+  }
+
+  async function handleVerifyProofFile(file: File | undefined) {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const bundle = JSON.parse(text) as ProofBundle;
+      const result = await verifyProofBundle(bundle);
+      if (result.status === "valid") {
+        setNotice(
+          `Proof verified for entry #${bundle.entry.record.sequence}: all ${result.checks.length} cryptographic checks passed.`,
+        );
+        setError("");
+      } else {
+        setError(
+          `Proof failed verification: ${result.errors.join(" ")} (file: ${file.name})`,
+        );
+        setNotice("");
+      }
+    } catch (cause) {
+      const message =
+        cause instanceof Error ? cause.message : "Could not parse bundle.";
+      setError(`Proof bundle could not be verified: ${message}`);
+    }
   }
 
   async function handleDuckDb() {
@@ -602,6 +628,31 @@ function App() {
                   <p className="break-all">
                     latest hash {latestEntry?.record.entryHash ?? "none"}
                   </p>
+                </div>
+                <div className="mt-4 border-t border-slate-200 pt-3">
+                  <p className="text-sm font-semibold text-slate-800">
+                    Verify a proof bundle
+                  </p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    Anyone can verify an exported bundle here without the vault
+                    key — load the JSON and the eight cryptographic checks run
+                    in the browser.
+                  </p>
+                  <label className="button-secondary mt-2 inline-flex cursor-pointer items-center gap-2">
+                    <Database size={16} aria-hidden="true" />
+                    <span>Choose proof JSON</span>
+                    <input
+                      type="file"
+                      accept="application/json"
+                      className="hidden"
+                      onChange={(event) => {
+                        void handleVerifyProofFile(
+                          event.currentTarget.files?.[0],
+                        );
+                        event.currentTarget.value = "";
+                      }}
+                    />
+                  </label>
                 </div>
               </Panel>
 
